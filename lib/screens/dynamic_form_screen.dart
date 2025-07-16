@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import '../services/mfiles_service.dart';
 import '../models/vault_object_type.dart';
 import '../models/object_class.dart';
-import '../models/class_property.dart';
 import '../models/object_creation_request.dart';
 
 class DynamicFormScreen extends StatefulWidget {

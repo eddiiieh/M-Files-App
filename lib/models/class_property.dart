@@ -1,8 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'class_property.g.dart';
-
-@JsonSerializable()
 class ClassProperty {
   final int id;
   final String name;
@@ -26,13 +21,35 @@ class ClassProperty {
     this.valuelist,
   });
 
-  factory ClassProperty.fromJson(Map<String, dynamic> json) =>
-      _$ClassPropertyFromJson(json);
+  factory ClassProperty.fromJson(Map<String, dynamic> json) {
+    return ClassProperty(
+      id: (json['ID'] as num?)?.toInt() ?? 0,
+      name: json['Name'] ?? 'Unnamed Property',
+      displayName: json['DisplayName'] ?? 'Unknown',
+      dataType: (json['DataType'] as num?)?.toInt() ?? 0,
+      isRequired: json['IsRequired'] ?? false,
+      isAutomatic: json['IsAutomatic'] ?? false,
+      isHidden: json['IsHidden'] ?? false,
+      defaultValue: json['DefaultValue'],
+      valuelist: (json['ValueList'] as List?)
+          ?.map((item) => PropertyValue.fromJson(item))
+          .toList(),
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$ClassPropertyToJson(this);
+  Map<String, dynamic> toJson() => {
+        'ID': id,
+        'Name': name,
+        'DisplayName': displayName,
+        'DataType': dataType,
+        'IsRequired': isRequired,
+        'IsAutomatic': isAutomatic,
+        'IsHidden': isHidden,
+        'DefaultValue': defaultValue,
+        'ValueList': valuelist?.map((v) => v.toJson()).toList(),
+      };
 }
 
-@JsonSerializable()
 class PropertyValue {
   final String displayValue;
   final dynamic value;
@@ -42,8 +59,15 @@ class PropertyValue {
     required this.value,
   });
 
-  factory PropertyValue.fromJson(Map<String, dynamic> json) =>
-      _$PropertyValueFromJson(json);
+  factory PropertyValue.fromJson(Map<String, dynamic> json) {
+    return PropertyValue(
+      displayValue: json['DisplayValue'] ?? '',
+      value: json['Value'],
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$PropertyValueToJson(this);
+  Map<String, dynamic> toJson() => {
+        'DisplayValue': displayValue,
+        'Value': value,
+      };
 }

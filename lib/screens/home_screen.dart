@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/mfiles_service.dart';
-import '../models/vault_object_type.dart';
 import 'object_classes_screen.dart';
 
 class HomeScreen extends StatefulWidget {

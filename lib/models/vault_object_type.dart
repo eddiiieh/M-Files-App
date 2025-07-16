@@ -1,8 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'vault_object_type.g.dart';
-
-@JsonSerializable()
 class VaultObjectType {
   final int id;
   final String name;
@@ -16,8 +11,22 @@ class VaultObjectType {
     required this.isDocument,
   });
 
-  factory VaultObjectType.fromJson(Map<String, dynamic> json) =>
-      _$VaultObjectTypeFromJson(json);
+  factory VaultObjectType.fromJson(Map<String, dynamic> json) {
+  return VaultObjectType(
+    id: (json['id'] as num?)?.toInt() ?? 0,
+    name: json['name'] ?? 'Unnamed',
+    displayName: json['displayName'] ?? 'Unknown',
+    isDocument: json['isDocument'] ?? false,
+  );
+}
 
-  Map<String, dynamic> toJson() => _$VaultObjectTypeToJson(this);
+
+  Map<String, dynamic> toJson() {
+    return {
+      'ID': id,
+      'Name': name,
+      'DisplayName': displayName,
+      'IsDocument': isDocument,
+    };
+  }
 }

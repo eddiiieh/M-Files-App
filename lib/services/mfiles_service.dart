@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:file_picker/file_picker.dart';
 import '../models/vault_object_type.dart';
 import '../models/object_class.dart';
 import '../models/class_property.dart';
@@ -10,7 +9,7 @@ import '../models/object_creation_request.dart';
 
 class MFilesService extends ChangeNotifier {
   static const String baseUrl = 'https://mfilesdemoapi.alignsys.tech';
-  
+
   List<VaultObjectType> _objectTypes = [];
   List<ObjectClass> _objectClasses = [];
   List<ClassProperty> _classProperties = [];
@@ -37,7 +36,7 @@ class MFilesService extends ChangeNotifier {
   Future<void> fetchObjectTypes() async {
     _setLoading(true);
     _setError(null);
-    
+
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/MfilesObjects/GetVaultsObjectsTypes'),
@@ -45,6 +44,7 @@ class MFilesService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
+        print('Object types response: ${response.body}');
         final List<dynamic> data = json.decode(response.body);
         _objectTypes = data.map((item) => VaultObjectType.fromJson(item)).toList();
       } else {
@@ -61,7 +61,7 @@ class MFilesService extends ChangeNotifier {
   Future<void> fetchObjectClasses(int objectTypeId) async {
     _setLoading(true);
     _setError(null);
-    
+
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/MfilesObjects/GetObjectClasses/$objectTypeId'),
@@ -69,8 +69,16 @@ class MFilesService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        _objectClasses = data.map((item) => ObjectClass.fromJson(item)).toList();
+        print('Object class response: ${response.body}');
+        final decoded = json.decode(response.body);
+
+        if (decoded is List) {
+          _objectClasses = decoded.map<ObjectClass>((item) => ObjectClass.fromJson(item)).toList();
+        } else if (decoded is Map<String, dynamic>) {
+          _objectClasses = [ObjectClass.fromJson(decoded)];
+        } else {
+          _setError('Unexpected response format for object classes');
+        }
       } else {
         _setError('Failed to fetch object classes: ${response.statusCode}');
       }
@@ -85,7 +93,7 @@ class MFilesService extends ChangeNotifier {
   Future<void> fetchClassProperties(int objectTypeId, int classId) async {
     _setLoading(true);
     _setError(null);
-    
+
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/MfilesObjects/ClassProps/$objectTypeId/$classId'),
@@ -93,6 +101,7 @@ class MFilesService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
+        print('Class properties response: ${response.body}');
         final List<dynamic> data = json.decode(response.body);
         _classProperties = data.map((item) => ClassProperty.fromJson(item)).toList();
       } else {
@@ -109,7 +118,7 @@ class MFilesService extends ChangeNotifier {
   Future<String?> uploadFile(File file) async {
     _setLoading(true);
     _setError(null);
-    
+
     try {
       var request = http.MultipartRequest(
         'POST',
@@ -141,7 +150,7 @@ class MFilesService extends ChangeNotifier {
   Future<bool> createObject(ObjectCreationRequest request) async {
     _setLoading(true);
     _setError(null);
-    
+
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/objectinstance/ObjectCreation'),

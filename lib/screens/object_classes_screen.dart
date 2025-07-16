@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/mfiles_service.dart';
 import '../models/vault_object_type.dart';
-import '../models/object_class.dart';
 import 'dynamic_form_screen.dart';
 
 class ObjectClassesScreen extends StatefulWidget {
