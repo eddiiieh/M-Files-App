@@ -22,31 +22,57 @@ class ClassProperty {
   });
 
   factory ClassProperty.fromJson(Map<String, dynamic> json) {
-    return ClassProperty(
-      id: (json['ID'] as num?)?.toInt() ?? 0,
-      name: json['Name'] ?? 'Unnamed Property',
-      displayName: json['DisplayName'] ?? 'Unknown',
-      dataType: (json['DataType'] as num?)?.toInt() ?? 0,
-      isRequired: json['IsRequired'] ?? false,
-      isAutomatic: json['IsAutomatic'] ?? false,
-      isHidden: json['IsHidden'] ?? false,
-      defaultValue: json['DefaultValue'],
-      valuelist: (json['ValueList'] as List?)
-          ?.map((item) => PropertyValue.fromJson(item))
-          .toList(),
-    );
+  return ClassProperty(
+    id: (json['propId'] as num?)?.toInt() ?? 0,
+    name: json['title'] ?? 'Unnamed Property',
+    displayName: json['title'] ?? 'Unnamed Property', // updated here
+    dataType: _parseDataType(json['propertytype']),
+    isRequired: json['isRequired'] ?? false,
+    isAutomatic: json['isAutomatic'] ?? false,
+    isHidden: json['isHidden'] ?? false,
+    defaultValue: null,
+    valuelist: null,
+  );
+}
+
+static int _parseDataType(String? type) {
+  switch (type) {
+    case 'MFDatatypeText':
+      return 1;
+    case 'MFDatatypeInteger':
+      return 2;
+    case 'MFDatatypeFloating':
+      return 3;
+    case 'MFDatatypeBoolean':
+      return 8;
+    case 'MFDatatypeDate':
+      return 5;
+    case 'MFDatatypeTime':
+      return 6;
+    case 'MFDatatypeTimestamp':
+      return 7;
+    case 'MFDatatypeLookup':
+      return 9;
+    case 'MFDatatypeMultiSelectLookup':
+      return 10;
+    case 'MFDatatypeMultiLineText':
+      return 13;
+    default:
+      return 0; // Unknown
   }
+}
+
+
 
   Map<String, dynamic> toJson() => {
-        'ID': id,
-        'Name': name,
-        'DisplayName': displayName,
-        'DataType': dataType,
-        'IsRequired': isRequired,
-        'IsAutomatic': isAutomatic,
-        'IsHidden': isHidden,
-        'DefaultValue': defaultValue,
-        'ValueList': valuelist?.map((v) => v.toJson()).toList(),
+        'propertyDef': id,
+        'propertyName': name,
+        'dataType': dataType,
+        'isRequired': isRequired,
+        'isAutomatic': isAutomatic,
+        'isHidden': isHidden,
+        'defaultValue': defaultValue,
+        'valueList': valuelist?.map((v) => v.toJson()).toList(),
       };
 }
 

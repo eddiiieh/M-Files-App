@@ -125,7 +125,7 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create ${widget.objectClass.displayName}'),
+        title: Text('Create ${widget.objectClass.name}'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Consumer<MFilesService>(

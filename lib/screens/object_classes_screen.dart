@@ -81,7 +81,7 @@ class _ObjectClassesScreenState extends State<ObjectClassesScreen> {
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
-                  title: Text(objectClass.displayName),
+                  title: Text(objectClass.name),
                   subtitle: Text('ID: ${objectClass.id}'),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {

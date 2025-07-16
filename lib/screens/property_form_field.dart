@@ -41,7 +41,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
       return TextFormField(
         enabled: false,
         decoration: InputDecoration(
-          labelText: widget.property.displayName,
+          labelText: widget.property.name,
           hintText: 'Automatic',
           border: const OutlineInputBorder(),
           filled: true,
@@ -56,14 +56,14 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: widget.property.displayName,
+            labelText: widget.property.name,
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
           ),
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   return null;
                 }
@@ -77,7 +77,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: widget.property.displayName,
+            labelText: widget.property.name,
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
           ),
@@ -86,7 +86,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   if (int.tryParse(value) == null) {
                     return 'Please enter a valid number';
@@ -109,7 +109,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: widget.property.displayName,
+            labelText: widget.property.name,
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
           ),
@@ -120,7 +120,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   if (double.tryParse(value) == null) {
                     return 'Please enter a valid decimal number';
@@ -143,7 +143,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: widget.property.displayName,
+            labelText: widget.property.name,
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
             suffixIcon: const Icon(Icons.calendar_today),
@@ -152,7 +152,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   return null;
                 }
@@ -176,7 +176,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: widget.property.displayName,
+            labelText: widget.property.name,
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
             suffixIcon: const Icon(Icons.access_time),
@@ -185,7 +185,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   return null;
                 }
@@ -207,7 +207,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: widget.property.displayName,
+            labelText: widget.property.name,
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
             suffixIcon: const Icon(Icons.calendar_today),
@@ -216,7 +216,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   return null;
                 }
@@ -254,7 +254,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
           children: [
             Expanded(
               child: Text(
-                widget.property.displayName,
+                widget.property.name,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
@@ -274,7 +274,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         if (widget.property.valuelist != null && widget.property.valuelist!.isNotEmpty) {
           return DropdownButtonFormField<dynamic>(
             decoration: InputDecoration(
-              labelText: widget.property.displayName,
+              labelText: widget.property.name,
               border: const OutlineInputBorder(),
               hintText: widget.property.isRequired ? 'Required' : 'Optional',
             ),
@@ -288,7 +288,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
             validator: widget.property.isRequired
                 ? (value) {
                     if (value == null) {
-                      return '${widget.property.displayName} is required';
+                      return '${widget.property.name} is required';
                     }
                     return null;
                   }
@@ -305,14 +305,14 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: widget.property.displayName,
+            labelText: widget.property.name,
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
           ),
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   return null;
                 }
@@ -328,14 +328,14 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: '${widget.property.displayName} (Multi-select)',
+            labelText: '${widget.property.name} (Multi-select)',
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
           ),
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   return null;
                 }
@@ -349,7 +349,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: widget.property.displayName,
+            labelText: widget.property.name,
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
           ),
@@ -357,7 +357,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   return null;
                 }
@@ -372,14 +372,14 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
         return TextFormField(
           controller: _controller,
           decoration: InputDecoration(
-            labelText: '${widget.property.displayName} (Type: ${widget.property.dataType})',
+            labelText: '${widget.property.name} (Type: ${widget.property.dataType})',
             border: const OutlineInputBorder(),
             hintText: widget.property.isRequired ? 'Required' : 'Optional',
           ),
           validator: widget.property.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return '${widget.property.displayName} is required';
+                    return '${widget.property.name} is required';
                   }
                   return null;
                 }
@@ -403,7 +403,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.property.displayName,
+                    widget.property.name,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),

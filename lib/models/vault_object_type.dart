@@ -12,21 +12,20 @@ class VaultObjectType {
   });
 
   factory VaultObjectType.fromJson(Map<String, dynamic> json) {
-  return VaultObjectType(
-    id: (json['id'] as num?)?.toInt() ?? 0,
-    name: json['name'] ?? 'Unnamed',
-    displayName: json['displayName'] ?? 'Unknown',
-    isDocument: json['isDocument'] ?? false,
-  );
-}
-
+    return VaultObjectType(
+      id: (json['objectid'] as num?)?.toInt() ?? 0,
+      name: json['namesingular'] ?? 'Unnamed',
+      displayName: json['nameplural'] ?? 'Unknown',
+      isDocument: json['objectid'] == 0, // treat object ID 0 as 'document'
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
-      'ID': id,
-      'Name': name,
-      'DisplayName': displayName,
-      'IsDocument': isDocument,
+      'objectid': id,
+      'namesingular': name,
+      'nameplural': displayName,
+      'isDocument': isDocument,
     };
   }
 }

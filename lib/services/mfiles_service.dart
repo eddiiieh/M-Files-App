@@ -44,7 +44,7 @@ class MFilesService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        print('Object types response: ${response.body}');
+        print('Object types API response: ${response.body}');
         final List<dynamic> data = json.decode(response.body);
         _objectTypes = data.map((item) => VaultObjectType.fromJson(item)).toList();
       } else {
@@ -59,35 +59,34 @@ class MFilesService extends ChangeNotifier {
 
   // 2. Get Object Classes by Type ID
   Future<void> fetchObjectClasses(int objectTypeId) async {
-    _setLoading(true);
-    _setError(null);
+  _setLoading(true);
+  _setError(null);
 
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/MfilesObjects/GetObjectClasses/$objectTypeId'),
-        headers: {'Content-Type': 'application/json'},
-      );
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/MfilesObjects/GetObjectClasses/$objectTypeId'),
+      headers: {'Content-Type': 'application/json'},
+    );
 
-      if (response.statusCode == 200) {
-        print('Object class response: ${response.body}');
-        final decoded = json.decode(response.body);
+    if (response.statusCode == 200) {
+      print('Object class API response: ${response.body}');
+      final Map<String, dynamic> data = json.decode(response.body);
+      final int objectTypeId = data['objectId'];
+      final List unGrouped = data['unGrouped'] ?? [];
 
-        if (decoded is List) {
-          _objectClasses = decoded.map<ObjectClass>((item) => ObjectClass.fromJson(item)).toList();
-        } else if (decoded is Map<String, dynamic>) {
-          _objectClasses = [ObjectClass.fromJson(decoded)];
-        } else {
-          _setError('Unexpected response format for object classes');
-        }
-      } else {
-        _setError('Failed to fetch object classes: ${response.statusCode}');
-      }
-    } catch (e) {
-      _setError('Error fetching object classes: $e');
-    } finally {
-      _setLoading(false);
+      _objectClasses = unGrouped
+          .map<ObjectClass>((item) => ObjectClass.fromJson(item, objectTypeId))
+          .toList();
+    } else {
+      _setError('Failed to fetch object classes: ${response.statusCode}');
     }
+  } catch (e) {
+    _setError('Error fetching object classes: $e');
+  } finally {
+    _setLoading(false);
   }
+}
+
 
   // 3. Get Class Properties
   Future<void> fetchClassProperties(int objectTypeId, int classId) async {
@@ -101,7 +100,7 @@ class MFilesService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        print('Class properties response: ${response.body}');
+        print('Class properties API response: ${response.body}');
         final List<dynamic> data = json.decode(response.body);
         _classProperties = data.map((item) => ClassProperty.fromJson(item)).toList();
       } else {
