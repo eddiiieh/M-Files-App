@@ -32,24 +32,33 @@ class ObjectCreationRequest {
       };
 }
 
+
+
 class PropertyValueRequest {
   final int propertyId;
   final dynamic value;
+  final int dataType; // Add this
 
   PropertyValueRequest({
     required this.propertyId,
     required this.value,
+    required this.dataType, // And this
   });
 
   factory PropertyValueRequest.fromJson(Map<String, dynamic> json) {
     return PropertyValueRequest(
       propertyId: (json['PropertyId'] as num?)?.toInt() ?? 0,
       value: json['Value'],
+      dataType: (json['DataType'] as num?)?.toInt() ?? 0, // optional for completeness
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'PropertyId': propertyId,
-        'Value': value,
+        'PropertyDef': propertyId,
+        'TypedValue': {
+          'DataType': dataType,
+          'Value': value,
+          'HasValue': true,
+        }
       };
 }

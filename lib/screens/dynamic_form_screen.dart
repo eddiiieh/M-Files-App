@@ -86,9 +86,12 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
     // Prepare property values
     final propertyValues = <PropertyValueRequest>[];
     for (final entry in _formValues.entries) {
+      final property = service.classProperties.firstWhere((p) => p.id == entry.key);
+
       propertyValues.add(PropertyValueRequest(
         propertyId: entry.key,
         value: entry.value,
+        dataType: property.dataType,
       ));
     }
 

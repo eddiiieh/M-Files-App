@@ -22,6 +22,11 @@ class ClassProperty {
   });
 
   factory ClassProperty.fromJson(Map<String, dynamic> json) {
+    final rawType = json['propertytype'];
+    final parsedDataType = _parseDataType(rawType);
+
+    // Debug print for verification
+    print('🔍 Property ID: ${json['propId']}, Type: $rawType → Parsed DataType: $parsedDataType');
   return ClassProperty(
     id: (json['propId'] as num?)?.toInt() ?? 0,
     name: json['title'] ?? 'Unnamed Property',

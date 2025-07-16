@@ -165,7 +165,7 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
               lastDate: DateTime(2100),
             );
             if (date != null) {
-              final formattedDate = date.toIso8601String().split('T')[0];
+              final formattedDate = '${date.toIso8601String().split('T')[0]}T00:00:00';
               _controller.text = formattedDate;
               widget.onChanged(formattedDate);
             }

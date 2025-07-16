@@ -151,6 +151,8 @@ class MFilesService extends ChangeNotifier {
     _setError(null);
 
     try {
+
+      print('Creating object with request: ${json.encode(request.toJson())}');
       final response = await http.post(
         Uri.parse('$baseUrl/api/objectinstance/ObjectCreation'),
         headers: {'Content-Type': 'application/json'},
@@ -160,6 +162,7 @@ class MFilesService extends ChangeNotifier {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
+        print('Response body: ${response.body}');
         _setError('Failed to create object: ${response.statusCode}');
         return false;
       }
