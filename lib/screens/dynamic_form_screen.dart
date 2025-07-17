@@ -88,11 +88,32 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
     for (final entry in _formValues.entries) {
       final property = service.classProperties.firstWhere((p) => p.id == entry.key);
 
+      // Debug print to check type
+      print('Property ${entry.key} value type: ${entry.value.runtimeType}');
+
       propertyValues.add(PropertyValueRequest(
         propertyId: entry.key,
         value: entry.value,
         dataType: property.dataType,
       ));
+    }
+
+    // 🔥 Ensure Object Name property (PropertyDef: 0) is present
+    final hasObjectName = propertyValues.any((p) => p.propertyId == 0);
+    if (!hasObjectName) {
+      // Try to find a suitable name value from your form (first non-empty text field)
+      final nameEntry = _formValues.entries.firstWhere(
+        (e) => e.value != null && e.value.toString().trim().isNotEmpty,
+        orElse: () => const MapEntry(0, 'Unnamed Object'),
+      );
+      propertyValues.insert(
+        0,
+        PropertyValueRequest(
+          propertyId: 0,
+          value: nameEntry.value,
+          dataType: 1, // MFDatatypeText
+        ),
+      );
     }
 
     // Create object request

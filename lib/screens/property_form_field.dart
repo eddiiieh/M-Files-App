@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/class_property.dart';
+import 'package:intl/intl.dart';
 
 class PropertyFormField extends StatefulWidget {
   final ClassProperty property;
@@ -165,9 +166,9 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
               lastDate: DateTime(2100),
             );
             if (date != null) {
-              final formattedDate = '${date.toIso8601String().split('T')[0]}T00:00:00';
+              final formattedDate = DateFormat('dd/MM/yyyy').format(date);
               _controller.text = formattedDate;
-              widget.onChanged(formattedDate);
+              widget.onChanged(date); // <-- Pass DateTime object!
             }
           },
         );
@@ -241,9 +242,9 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
                   time.hour,
                   time.minute,
                 );
-                final formattedDateTime = dateTime.toIso8601String();
+                final formattedDateTime = DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
                 _controller.text = formattedDateTime;
-                widget.onChanged(formattedDateTime);
+                widget.onChanged(dateTime); // <-- Pass DateTime object!
               }
             }
           },
