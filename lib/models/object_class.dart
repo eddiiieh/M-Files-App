@@ -17,6 +17,8 @@ class ObjectClass {
     );
   }
 
+  String get displayName => name;
+
   Map<String, dynamic> toJson() => {
         'classId': id,
         'className': name,

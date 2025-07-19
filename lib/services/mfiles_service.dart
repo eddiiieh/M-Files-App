@@ -46,7 +46,16 @@ class MFilesService extends ChangeNotifier {
       if (response.statusCode == 200) {
         print('Object types API response: ${response.body}');
         final List<dynamic> data = json.decode(response.body);
-        _objectTypes = data.map((item) => VaultObjectType.fromJson(item)).toList();
+        _objectTypes = data
+            .map((item) => VaultObjectType.fromJson(item))
+            .where((type) => type.displayName.trim().toLowerCase() != 'document collections')
+            .toList();
+
+            // Paste here to debug what is in your list
+          for (var type in _objectTypes) {
+            print('displayName: "${type.displayName}"');
+          }
+          
       } else {
         _setError('Failed to fetch object types: ${response.statusCode}');
       }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../models/class_property.dart';
 import 'package:intl/intl.dart';
+import '../models/class_property.dart';
 
 class PropertyFormField extends StatefulWidget {
   final ClassProperty property;
@@ -19,15 +18,13 @@ class PropertyFormField extends StatefulWidget {
 
 class _PropertyFormFieldState extends State<PropertyFormField> {
   late TextEditingController _controller;
-  dynamic _selectedValue;
+  DateTime? _selectedDate;
+  DateTime? _selectedDateTime;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.property.defaultValue);
-    if (widget.property.defaultValue != null) {
-      widget.onChanged(widget.property.defaultValue);
-    }
+    _controller = TextEditingController();
   }
 
   @override
@@ -36,413 +33,360 @@ class _PropertyFormFieldState extends State<PropertyFormField> {
     super.dispose();
   }
 
-  Widget _buildFormField() {
-    // Automatic properties - show as disabled
-    if (widget.property.isAutomatic) {
-      return TextFormField(
-        enabled: false,
-        decoration: InputDecoration(
-          labelText: widget.property.name,
-          hintText: 'Automatic',
-          border: const OutlineInputBorder(),
-          filled: true,
-          fillColor: Colors.grey[200],
-        ),
-      );
+  String _formatDateForMFiles(DateTime date) {
+    // M-Files expects date in format: YYYY-MM-DDTHH:MM:SS.000Z or YYYY-MM-DD
+    // For date only (DataType 5), use: YYYY-MM-DD
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
+
+  String _formatDateTimeForMFiles(DateTime dateTime) {
+    // M-Files expects datetime in format: YYYY-MM-DDTHH:MM:SS.000Z
+    // Try this format first, if it doesn't work, we'll use ISO 8601
+    return DateFormat("yyyy-MM-dd'T'HH:mm:ss.000'Z'").format(dateTime.toUtc());
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+    );
+    
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+        _controller.text = DateFormat('MMM dd, yyyy').format(picked);
+      });
+      // Send the M-Files formatted date
+      widget.onChanged(_formatDateForMFiles(picked));
     }
+  }
 
-    // Based on data type, render appropriate input
-    switch (widget.property.dataType) {
-      case 1: // Text
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: widget.property.name,
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-          ),
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  return null;
-                }
-              : null,
-          onChanged: (value) {
-            widget.onChanged(value);
-          },
+  Future<void> _selectDateTime() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+    );
+    
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedDateTime ?? DateTime.now()),
+      );
+      
+      if (pickedTime != null) {
+        final DateTime combined = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
         );
-
-      case 2: // Number (Integer)
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: widget.property.name,
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-          ),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  return null;
-                }
-              : (value) {
-                  if (value != null && value.isNotEmpty && int.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  return null;
-                },
-          onChanged: (value) {
-            final intValue = int.tryParse(value);
-            widget.onChanged(intValue);
-          },
-        );
-
-      case 3: // Number (Decimal)
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: widget.property.name,
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-          ],
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Please enter a valid decimal number';
-                  }
-                  return null;
-                }
-              : (value) {
-                  if (value != null && value.isNotEmpty && double.tryParse(value) == null) {
-                    return 'Please enter a valid decimal number';
-                  }
-                  return null;
-                },
-          onChanged: (value) {
-            final doubleValue = double.tryParse(value);
-            widget.onChanged(doubleValue);
-          },
-        );
-
-      case 5: // Date
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: widget.property.name,
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-            suffixIcon: const Icon(Icons.calendar_today),
-          ),
-          readOnly: true,
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  return null;
-                }
-              : null,
-          onTap: () async {
-            final date = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(1900),
-              lastDate: DateTime(2100),
-            );
-            if (date != null) {
-              final formattedDate = DateFormat('dd/MM/yyyy').format(date);
-              _controller.text = formattedDate;
-              widget.onChanged(date); // <-- Pass DateTime object!
-            }
-          },
-        );
-
-      case 6: // Time
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: widget.property.name,
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-            suffixIcon: const Icon(Icons.access_time),
-          ),
-          readOnly: true,
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  return null;
-                }
-              : null,
-          onTap: () async {
-            final time = await showTimePicker(
-              context: context,
-              initialTime: TimeOfDay.now(),
-            );
-            if (time != null) {
-              final formattedTime = time.format(context);
-              _controller.text = formattedTime;
-              widget.onChanged(formattedTime);
-            }
-          },
-        );
-
-      case 7: // DateTime
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: widget.property.name,
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-            suffixIcon: const Icon(Icons.calendar_today),
-          ),
-          readOnly: true,
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  return null;
-                }
-              : null,
-          onTap: () async {
-            final date = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(1900),
-              lastDate: DateTime(2100),
-            );
-            if (date != null) {
-              final time = await showTimePicker(
-                context: context,
-                initialTime: TimeOfDay.now(),
-              );
-              if (time != null) {
-                final dateTime = DateTime(
-                  date.year,
-                  date.month,
-                  date.day,
-                  time.hour,
-                  time.minute,
-                );
-                final formattedDateTime = DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
-                _controller.text = formattedDateTime;
-                widget.onChanged(dateTime); // <-- Pass DateTime object!
-              }
-            }
-          },
-        );
-
-      case 8: // Boolean
-        return Row(
-          children: [
-            Expanded(
-              child: Text(
-                widget.property.name,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
-            Switch(
-              value: _selectedValue ?? false,
-              onChanged: (value) {
-                setState(() {
-                  _selectedValue = value;
-                });
-                widget.onChanged(value);
-              },
-            ),
-          ],
-        );
-
-      case 9: // Lookup (Dropdown)
-        if (widget.property.valuelist != null && widget.property.valuelist!.isNotEmpty) {
-          return DropdownButtonFormField<dynamic>(
-            decoration: InputDecoration(
-              labelText: widget.property.name,
-              border: const OutlineInputBorder(),
-              hintText: widget.property.isRequired ? 'Required' : 'Optional',
-            ),
-            value: _selectedValue,
-            items: widget.property.valuelist!.map((propertyValue) {
-              return DropdownMenuItem<dynamic>(
-                value: propertyValue.value,
-                child: Text(propertyValue.displayValue),
-              );
-            }).toList(),
-            validator: widget.property.isRequired
-                ? (value) {
-                    if (value == null) {
-                      return '${widget.property.name} is required';
-                    }
-                    return null;
-                  }
-                : null,
-            onChanged: (value) {
-              setState(() {
-                _selectedValue = value;
-              });
-              widget.onChanged(value);
-            },
-          );
-        }
-        // Fall back to text field if no value list
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: widget.property.name,
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-          ),
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  return null;
-                }
-              : null,
-          onChanged: (value) {
-            widget.onChanged(value);
-          },
-        );
-
-      case 10: // Multi-select Lookup
-        // For simplicity, implementing as a text field
-        // In a real app, you'd want a proper multi-select widget
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: '${widget.property.name} (Multi-select)',
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-          ),
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  return null;
-                }
-              : null,
-          onChanged: (value) {
-            widget.onChanged(value);
-          },
-        );
-
-      case 13: // Multi-line Text
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: widget.property.name,
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-          ),
-          maxLines: 3,
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  return null;
-                }
-              : null,
-          onChanged: (value) {
-            widget.onChanged(value);
-          },
-        );
-
-      default:
-        // Default to text field for unknown types
-        return TextFormField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: '${widget.property.name} (Type: ${widget.property.dataType})',
-            border: const OutlineInputBorder(),
-            hintText: widget.property.isRequired ? 'Required' : 'Optional',
-          ),
-          validator: widget.property.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return '${widget.property.name} is required';
-                  }
-                  return null;
-                }
-              : null,
-          onChanged: (value) {
-            widget.onChanged(value);
-          },
-        );
+        
+        setState(() {
+          _selectedDateTime = combined;
+          _controller.text = DateFormat('MMM dd, yyyy HH:mm').format(combined);
+        });
+        // Send the M-Files formatted datetime
+        widget.onChanged(_formatDateTimeForMFiles(combined));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    switch (widget.property.dataType) {
+      case 1: // MFDatatypeText
+        return TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: widget.property.displayName,
+            hintText: 'Enter ${widget.property.displayName.toLowerCase()}',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+          ),
+          validator: widget.property.isRequired
+              ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '${widget.property.displayName} is required';
+                  }
+                  return null;
+                }
+              : null,
+          onChanged: (value) {
+            widget.onChanged(value.trim().isEmpty ? null : value.trim());
+          },
+        );
+
+      case 2: // MFDatatypeInteger
+        return TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: widget.property.displayName,
+            hintText: 'Enter ${widget.property.displayName.toLowerCase()}',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+          ),
+          keyboardType: TextInputType.number,
+          validator: widget.property.isRequired
+              ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '${widget.property.displayName} is required';
+                  }
+                  if (int.tryParse(value.trim()) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null;
+                }
+              : (value) {
+                  if (value != null && value.trim().isNotEmpty) {
+                    if (int.tryParse(value.trim()) == null) {
+                      return 'Please enter a valid number';
+                    }
+                  }
+                  return null;
+                },
+          onChanged: (value) {
+            final trimmed = value.trim();
+            if (trimmed.isEmpty) {
+              widget.onChanged(null);
+            } else {
+              final parsed = int.tryParse(trimmed);
+              widget.onChanged(parsed);
+            }
+          },
+        );
+
+      case 3: // MFDatatypeFloating
+        return TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: widget.property.displayName,
+            hintText: 'Enter ${widget.property.displayName.toLowerCase()}',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+          ),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: widget.property.isRequired
+              ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '${widget.property.displayName} is required';
+                  }
+                  if (double.tryParse(value.trim()) == null) {
+                    return 'Please enter a valid decimal number';
+                  }
+                  return null;
+                }
+              : (value) {
+                  if (value != null && value.trim().isNotEmpty) {
+                    if (double.tryParse(value.trim()) == null) {
+                      return 'Please enter a valid decimal number';
+                    }
+                  }
+                  return null;
+                },
+          onChanged: (value) {
+            final trimmed = value.trim();
+            if (trimmed.isEmpty) {
+              widget.onChanged(null);
+            } else {
+              final parsed = double.tryParse(trimmed);
+              widget.onChanged(parsed);
+            }
+          },
+        );
+
+      case 5: // MFDatatypeDate
+        return TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: widget.property.displayName,
+            hintText: 'Select ${widget.property.displayName.toLowerCase()}',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            suffixIcon: const Icon(Icons.calendar_today),
+          ),
+          readOnly: true,
+          validator: widget.property.isRequired
+              ? (value) {
+                  if (_selectedDate == null) {
+                    return '${widget.property.displayName} is required';
+                  }
+                  return null;
+                }
+              : null,
+          onTap: _selectDate,
+        );
+
+      case 7: // MFDatatypeTimestamp
+        return TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: widget.property.displayName,
+            hintText: 'Select ${widget.property.displayName.toLowerCase()}',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            suffixIcon: const Icon(Icons.access_time),
+          ),
+          readOnly: true,
+          validator: widget.property.isRequired
+              ? (value) {
+                  if (_selectedDateTime == null) {
+                    return '${widget.property.displayName} is required';
+                  }
+                  return null;
+                }
+              : null,
+          onTap: _selectDateTime,
+        );
+
+      case 8: // MFDatatypeBoolean
+        return FormField<bool>(
+          initialValue: false,
+          validator: widget.property.isRequired
+              ? (value) {
+                  // For boolean fields, we might want to ensure they're explicitly set
+                  return null; // Usually booleans don't need validation
+                }
+              : null,
+          builder: (FormFieldState<bool> state) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    widget.property.name,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                if (widget.property.isRequired)
-                  const Text(
-                    '*',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                if (widget.property.isAutomatic)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: state.value ?? false,
+                      onChanged: (bool? value) {
+                        state.didChange(value ?? false);
+                        widget.onChanged(value ?? false);
+                      },
                     ),
-                    child: const Text(
-                      'AUTO',
-                      style: TextStyle(fontSize: 12),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        widget.property.displayName,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ],
+                ),
+                if (state.hasError)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12, top: 4),
+                    child: Text(
+                      state.errorText!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
                     ),
                   ),
               ],
+            );
+          },
+        );
+
+      case 9: // MFDatatypeMultiSelectLookup
+      case 10: // MFDatatypeLookup
+        // For lookups, you'd typically need to fetch the available options
+        // and display them in a dropdown. For now, treating as text input
+        return TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: widget.property.displayName,
+            hintText: 'Select ${widget.property.displayName.toLowerCase()}',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(height: 8),
-            _buildFormField(),
-            if (widget.property.isRequired)
-              const Padding(
-                padding: EdgeInsets.only(top: 4),
-                child: Text(
-                  'This field is required',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 12,
-                  ),
-                ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            suffixIcon: const Icon(Icons.arrow_drop_down),
+          ),
+          readOnly: true,
+          validator: widget.property.isRequired
+              ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '${widget.property.displayName} is required';
+                  }
+                  return null;
+                }
+              : null,
+          onTap: () {
+            // TODO: Implement lookup selection
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Lookup selection not implemented yet'),
               ),
-          ],
-        ),
-      ),
-    );
+            );
+          },
+        );
+
+      case 11: // MFDatatypeMultiLineText
+        return TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: widget.property.displayName,
+            hintText: 'Enter ${widget.property.displayName.toLowerCase()}',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+          ),
+          maxLines: 4,
+          validator: widget.property.isRequired
+              ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '${widget.property.displayName} is required';
+                  }
+                  return null;
+                }
+              : null,
+          onChanged: (value) {
+            widget.onChanged(value.trim().isEmpty ? null : value.trim());
+          },
+        );
+
+      default:
+        return TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: '${widget.property.displayName} (Type: ${widget.property.dataType})',
+            hintText: 'Enter value',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+          ),
+          validator: widget.property.isRequired
+              ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '${widget.property.displayName} is required';
+                  }
+                  return null;
+                }
+              : null,
+          onChanged: (value) {
+            widget.onChanged(value.trim().isEmpty ? null : value.trim());
+          },
+        );
+    }
   }
 }

@@ -25,3 +25,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/mfileslogo.png
+    - assets/TechEdgeLogo.png
+    # You can add more assets or use a folder:
+    # - assets/

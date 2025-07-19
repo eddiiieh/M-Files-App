@@ -15,7 +15,8 @@ class MainApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MFilesService(),
       child: MaterialApp(
-        title: 'M-Files Integration',
+        debugShowCheckedModeBanner: false,
+        title: 'M-Files App',
         theme: ThemeData(
           primarySwatch: Colors.blue,
           useMaterial3: true,

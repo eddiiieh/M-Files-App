@@ -59,9 +59,11 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
     // Check if required file is selected for document objects
     if (widget.objectType.isDocument && _selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a file for document objects'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Please select a file for document objects'),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
       return;
@@ -74,9 +76,11 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
       uploadId = await service.uploadFile(_selectedFile!);
       if (uploadId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to upload file'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: const Text('Failed to upload file'),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
         return;
@@ -129,9 +133,11 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
     
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Object created successfully!'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Text('Object created successfully!'),
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
       Navigator.pop(context);
@@ -139,7 +145,9 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to create object: ${service.error}'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
     }
@@ -147,133 +155,367 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Create ${widget.objectClass.name}'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: Consumer<MFilesService>(
-        builder: (context, service, child) {
-          if (service.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (service.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                    size: 64,
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(52),
+          child: AppBar(
+            backgroundColor: const Color(0xFF0A1541),
+            elevation: 0,
+            titleSpacing: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0, right: 8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: Image.asset(
+                      'assets/mfileslogo.png',
+                      height: 36,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error: ${service.error}',
-                    style: TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6.0),
+                  child: Text(
+                    '|',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      service.clearError();
-                      service.fetchClassProperties(
-                        widget.objectType.id,
-                        widget.objectClass.id,
-                      );
-                    },
-                    child: const Text('Retry'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      'assets/TechEdgeLogo.png',
+                      height: 30,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ],
+                ),
+              ],
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: OutlinedButton.icon(
+                  onPressed: () => _submitForm(),
+                  icon: const Icon(Icons.save, color: Colors.white, size: 20),
+                  label: const Text(
+                    'Save',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A1541),
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    textStyle: const TextStyle(fontSize: 14),
+                  ),
+                ),
               ),
-            );
-          }
+            ],
+          ),
+        ),
+        body: Consumer<MFilesService>(
+          builder: (context, service, child) {
+            if (service.isLoading && service.classProperties.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (service.classProperties.isEmpty) {
-            return const Center(
-              child: Text('No properties found for this class'),
-            );
-          }
+            if (service.error != null && service.classProperties.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 64,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error: ${service.error}',
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        service.clearError();
+                        service.fetchClassProperties(
+                          widget.objectType.id,
+                          widget.objectClass.id,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0A1541),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // File picker for document objects
-                  if (widget.objectType.isDocument) ...[
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
+            if (service.classProperties.isEmpty) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.grey,
+                      size: 64,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'No properties found for this class',
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                // Header Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        widget.objectType.isDocument ? Icons.description : Icons.folder,
+                        color: Colors.blue,
+                        size: 32,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'File Upload',
-                              style: Theme.of(context).textTheme.titleMedium,
+                              'Create ${widget.objectClass.displayName}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    _selectedFileName ?? 'No file selected',
-                                    style: TextStyle(
-                                      color: _selectedFileName != null
-                                          ? Colors.green
-                                          : Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                                ElevatedButton.icon(
-                                  onPressed: _pickFile,
-                                  icon: const Icon(Icons.attach_file),
-                                  label: const Text('Select File'),
-                                ),
-                              ],
+                            const SizedBox(height: 4),
+                            Text(
+                              'Object Type: ${widget.objectType.displayName}',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  
-                  // Property form fields
-                  ...service.classProperties
-                      .where((property) => !property.isHidden)
-                      .map((property) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: PropertyFormField(
-                              property: property,
-                              onChanged: (value) {
-                                setState(() {
-                                  _formValues[property.id] = value;
-                                });
-                              },
-                            ),
-                          )),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Submit button
-                  ElevatedButton(
-                    onPressed: service.isLoading ? null : _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: service.isLoading
-                        ? const CircularProgressIndicator()
-                        : const Text('Create Object'),
+                    ],
                   ),
+                ),
+                const SizedBox(height: 16),
+
+                // File Upload Section (for document objects)
+                if (widget.objectType.isDocument) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade100,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.attach_file, color: Colors.blue),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'File Upload',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _selectedFileName ?? 'No file selected',
+                                  style: TextStyle(
+                                    color: _selectedFileName != null
+                                        ? Colors.green.shade700
+                                        : Colors.grey.shade600,
+                                    fontWeight: _selectedFileName != null
+                                        ? FontWeight.w500
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              ElevatedButton.icon(
+                                onPressed: _pickFile,
+                                icon: const Icon(Icons.folder_open, size: 18),
+                                label: const Text('Browse'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0A1541),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
-              ),
-            ),
-          );
-        },
+
+                // Properties Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade100,
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.settings, color: Colors.blue),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Properties',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // Property form fields
+                        ...service.classProperties
+                            .where((property) => !property.isHidden)
+                            .map((property) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: PropertyFormField(
+                                    property: property,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _formValues[property.id] = value;
+                                      });
+                                    },
+                                  ),
+                                )),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Submit button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: service.isLoading ? null : _submitForm,
+                    icon: service.isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.save, size: 20),
+                    label: Text(
+                      service.isLoading ? 'Creating...' : 'Create Object',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0A1541),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
